@@ -43,19 +43,23 @@ class UserProfileSerializer (serializers.ModelSerializer):
         fields=['id','email','Name']
 
 class UserchangePasswordSerializer(serializers.Serializer):
-    password= serializers.CharField(max_length=255, style={'input_type':'password'},write_only=True)
-    password2= serializers.CharField(max_length=255, style={'input_type':'password'},write_only=True)
+    password = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
+    password2 = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
+
     class Meta:
-        fields= ['password','password2']
+        fields = ['password', 'password2']
 
     def validate(self, attrs):
-        password= attrs.get('password')
-        password2= attrs.get('password2')
-        user=self.context.get('user')
-        if password!= password2:
-            raise serializers.DjangoValidationError("password and confirm password dosent match")
-        # return super().validate(attrs)
-    
-        user.set_password(password)
-        user.save()
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+        user = self.context.get('user')
+
+        if password != password2:
+            raise serializers.ValidationError("Password and confirm password don't match")
+
         return attrs
+
+    def save(self, **kwargs):
+        user = self.context.get('user')
+        user.set_password(self.validated_data['password'])
+        user.save()
